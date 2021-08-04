@@ -239,16 +239,47 @@ public class RNCWebViewModule extends ReactContextBaseJavaModule implements Acti
     return null;
   }
 
-  public void startPhotoPickerIntent(ValueCallback<Uri> filePathCallback, String acceptType) {
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+  public boolean startPhotoPickerIntent_bu(final ValueCallback<Uri[]> callback, final String[] acceptTypes, final boolean allowMultiple) {
+    filePathCallback = callback;
+
+    ArrayList<Parcelable> extraIntents = new ArrayList<>();
+    if (!needsCameraPermission()) {
+      if (acceptsImages(acceptTypes)) {
+        Intent photoIntent = getPhotoIntent();
+        if (photoIntent != null) {
+          extraIntents.add(photoIntent);
+        }
+      }
+      if (acceptsVideo(acceptTypes)) {
+        Intent videoIntent = getVideoIntent();
+        if (videoIntent != null) {
+          extraIntents.add(videoIntent);
+        }
+      }
+    }
+
+    Intent fileSelectionIntent = getFileChooserIntent(acceptTypes, allowMultiple);
+
+    Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
+    chooserIntent.putExtra(Intent.EXTRA_INTENT, fileSelectionIntent);    
+    
+    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents.toArray(new Parcelable[]{}));
+
+    if (chooserIntent.resolveActivity(getCurrentActivity().getPackageManager()) != null) {
+      getCurrentActivity().startActivityForResult(chooserIntent, PICKER);
+    } else {
+      Log.w("RNCWebViewModule", "there is no Activity to handle this Intent");
+    }
+
+    return true;
+  }
+
+  public void startPhotoPickerIntent_bu(ValueCallback<Uri> filePathCallback, String acceptType) {
     filePathCallbackLegacy = filePathCallback;
 
     Intent fileChooserIntent = getFileChooserIntent(acceptType);
-    //Intent chooserIntent = Intent.createChooser(fileChooserIntent, "");    
-    //STAR    
-    Intent photoIntentForceStar = getPhotoIntent();
-    Intent chooserIntent = Intent.createChooser(photoIntentForceStar, ""); 
-    //STAR
-
+    Intent chooserIntent = Intent.createChooser(fileChooserIntent, "");
 
     ArrayList<Parcelable> extraIntents = new ArrayList<>();
     if (acceptsImages(acceptType)) {
@@ -272,42 +303,45 @@ public class RNCWebViewModule extends ReactContextBaseJavaModule implements Acti
     }
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-  public boolean startPhotoPickerIntent(final ValueCallback<Uri[]> callback, final String[] acceptTypes, final boolean allowMultiple) {
-    filePathCallback = callback;
-
-    ArrayList<Parcelable> extraIntents = new ArrayList<>();
+  public void startPhotoPickerIntent(ValueCallback<Uri> filePathCallback, String acceptType) {
+    filePathCallbackLegacy = filePathCallback;
+    Intent customIntent = null;
+    
     if (!needsCameraPermission()) {
       if (acceptsImages(acceptTypes)) {
-        Intent photoIntent = getPhotoIntent();
-        if (photoIntent != null) {
-          extraIntents.add(photoIntent);
-        }
+        customIntent = getPhotoIntent();        
       }
       if (acceptsVideo(acceptTypes)) {
-        Intent videoIntent = getVideoIntent();
-        if (videoIntent != null) {
-          extraIntents.add(videoIntent);
-        }
+        customIntent = getVideoIntent();        
       }
     }
 
-    Intent fileSelectionIntent = getFileChooserIntent(acceptTypes, allowMultiple);
-
-    Intent chooserIntent = new Intent(Intent.ACTION_CHOOSER);
-    //chooserIntent.putExtra(Intent.EXTRA_INTENT, fileSelectionIntent);    
-    //STAR
-    Intent photoIntentForceStar = getPhotoIntent();
-    chooserIntent.putExtra(Intent.EXTRA_INTENT, photoIntentForceStar);
-    //STAR
-    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, extraIntents.toArray(new Parcelable[]{}));
-
-    if (chooserIntent.resolveActivity(getCurrentActivity().getPackageManager()) != null) {
-      getCurrentActivity().startActivityForResult(chooserIntent, PICKER);
+    if (customIntent.resolveActivity(getCurrentActivity().getPackageManager()) != null) {
+      getCurrentActivity().startActivityForResult(customIntent, PICKER_LEGACY);
     } else {
       Log.w("RNCWebViewModule", "there is no Activity to handle this Intent");
     }
+  }
 
+  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+  public boolean startPhotoPickerIntent(final ValueCallback<Uri[]> callback, final String[] acceptTypes, final boolean allowMultiple) {
+    filePathCallback = callback;
+    Intent customIntent = null;
+    
+    if (!needsCameraPermission()) {
+      if (acceptsImages(acceptTypes)) {
+        customIntent = getPhotoIntent();        
+      }
+      if (acceptsVideo(acceptTypes)) {
+        customIntent = getVideoIntent();        
+      }
+    }
+
+    if (customIntent.resolveActivity(getCurrentActivity().getPackageManager()) != null) {
+      getCurrentActivity().startActivityForResult(customIntent, PICKER);
+    } else {
+      Log.w("RNCWebViewModule", "there is no Activity to handle this Intent");
+    }
     return true;
   }
 
