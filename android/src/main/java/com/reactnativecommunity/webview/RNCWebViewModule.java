@@ -308,10 +308,10 @@ public class RNCWebViewModule extends ReactContextBaseJavaModule implements Acti
     Intent customIntent = null;
     
     if (!needsCameraPermission()) {
-      if (acceptsImages(acceptTypes)) {
+      if (acceptsImages(acceptType)) {
         customIntent = getPhotoIntent();        
       }
-      if (acceptsVideo(acceptTypes)) {
+      if (acceptsVideo(acceptType)) {
         customIntent = getVideoIntent();        
       }
     }
