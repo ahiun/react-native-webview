@@ -306,15 +306,15 @@ public class RNCWebViewModule extends ReactContextBaseJavaModule implements Acti
   public void startPhotoPickerIntent(ValueCallback<Uri> filePathCallback, String acceptType) {
     filePathCallbackLegacy = filePathCallback;
     Intent customIntent = null;
-    
-    if (!needsCameraPermission()) {
-      if (acceptsImages(acceptType)) {
-        customIntent = getPhotoIntent();        
-      }
-      if (acceptsVideo(acceptType)) {
-        customIntent = getVideoIntent();        
-      }
-    }
+    customIntent = getPhotoIntent(); 
+    // if (!needsCameraPermission()) {
+    //   if (acceptsImages(acceptType)) {
+    //     customIntent = getPhotoIntent();        
+    //   }
+    //   if (acceptsVideo(acceptType)) {
+    //     customIntent = getVideoIntent();        
+    //   }
+    // }
 
     if (customIntent.resolveActivity(getCurrentActivity().getPackageManager()) != null) {
       getCurrentActivity().startActivityForResult(customIntent, PICKER_LEGACY);
@@ -327,15 +327,16 @@ public class RNCWebViewModule extends ReactContextBaseJavaModule implements Acti
   public boolean startPhotoPickerIntent(final ValueCallback<Uri[]> callback, final String[] acceptTypes, final boolean allowMultiple) {
     filePathCallback = callback;
     Intent customIntent = null;
-    
-    if (!needsCameraPermission()) {
-      if (acceptsImages(acceptTypes)) {
-        customIntent = getPhotoIntent();        
-      }
-      if (acceptsVideo(acceptTypes)) {
-        customIntent = getVideoIntent();        
-      }
-    }
+    customIntent = getPhotoIntent();
+
+    // if (!needsCameraPermission()) {
+    //   if (acceptsImages(acceptTypes)) {
+    //     customIntent = getPhotoIntent();        
+    //   }
+    //   if (acceptsVideo(acceptTypes)) {
+    //     customIntent = getVideoIntent();        
+    //   }
+    // }
 
     if (customIntent.resolveActivity(getCurrentActivity().getPackageManager()) != null) {
       getCurrentActivity().startActivityForResult(customIntent, PICKER);
